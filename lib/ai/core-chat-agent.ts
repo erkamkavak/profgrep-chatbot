@@ -86,6 +86,7 @@ export async function createCoreChatAgent({
     selectedModel: modelDefinition.apiModelId as any,
     attachments: userMessage.parts.filter((part) => part.type === "file"),
     lastGeneratedImage,
+    mixedbreadApiKey: providerKeys?.mixedbread,
   });
 
   const enabledActiveTools = activeTools.filter(

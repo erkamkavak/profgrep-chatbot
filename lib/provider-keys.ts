@@ -1,7 +1,13 @@
 // Provider API keys management - stored in localStorage on client side
 // Keys are sent with each request to the chat API
 
-export type ProviderId = "openai" | "anthropic" | "google" | "xai" | "openrouter";
+export type ProviderId =
+  | "openai"
+  | "anthropic"
+  | "google"
+  | "xai"
+  | "openrouter"
+  | "mixedbread";
 
 export interface ProviderConfig {
   id: ProviderId;
@@ -47,6 +53,14 @@ export const PROVIDER_CONFIGS: Record<ProviderId, ProviderConfig> = {
     keyPlaceholder: "xai-...",
     docsUrl: "https://console.x.ai/",
   },
+  mixedbread: {
+    id: "mixedbread",
+    name: "Mixedbread (Embeddings)",
+    description:
+      "Vector search and file embeddings via Mixedbread. Used for the mgrep professor search.",
+    keyPlaceholder: "mxb_...",
+    docsUrl: "https://docs.mixedbread.ai/docs/introduction",
+  },
 };
 
 const STORAGE_KEY = "sparka-provider-keys";
@@ -57,6 +71,7 @@ export interface ProviderKeys {
   google?: string;
   xai?: string;
   openrouter?: string;
+  mixedbread?: string;
 }
 
 // Client-side functions

@@ -4,21 +4,21 @@ import { Check, ExternalLink, Eye, EyeOff, Key, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
-    type ProviderId,
-    type ProviderKeys,
-    PROVIDER_CONFIGS,
-    getProviderKeys,
-    removeProviderKey,
-    setProviderKey,
+  type ProviderId,
+  type ProviderKeys,
+  PROVIDER_CONFIGS,
+  getProviderKeys,
+  removeProviderKey,
+  setProviderKey,
 } from "@/lib/provider-keys";
 
 interface ProviderKeyInputProps {
@@ -181,17 +181,30 @@ export function SecretsDialog({ children }: { children: React.ReactNode }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {providerOrder.map((providerId) => (
-            <ProviderKeyInput
-              key={providerId}
-              providerId={providerId}
-              savedKey={keys[providerId]}
-              onSave={(key) => handleSaveKey(providerId, key)}
-              onRemove={() => handleRemoveKey(providerId)}
-            />
-          ))}
+        <div className="space-y-6 py-4">
+          <div className="space-y-4">
+            {providerOrder.map((providerId) => (
+              <ProviderKeyInput
+                key={providerId}
+                providerId={providerId}
+                savedKey={keys[providerId]}
+                onSave={(key) => handleSaveKey(providerId, key)}
+                onRemove={() => handleRemoveKey(providerId)}
+              />
+            ))}
+          </div>
         </div>
+
+        <div className="font-medium text-sm">Mixedbread embeddings key</div>
+        <p className="text-muted-foreground text-xs">
+          If you hit the app&apos;s Mixedbread quota, add your own API key here to continue using these tools.
+        </p>
+        <ProviderKeyInput
+          providerId={"mixedbread"}
+          savedKey={keys.mixedbread}
+          onSave={(key) => handleSaveKey("mixedbread", key)}
+          onRemove={() => handleRemoveKey("mixedbread")}
+        />
 
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800 text-sm dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
           <strong>Note:</strong> API keys are stored in your browser's local

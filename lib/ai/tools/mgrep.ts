@@ -47,7 +47,7 @@ export async function embedMgrepFiles({
   } as any);
 }
 
-const createMgrepTools = (apiKey?: string) => {
+export const createMgrepTools = (apiKey?: string) => {
   const mgrepSearchTool = tool({
     description:
       "Search through mgrep-indexed files using a single, focused natural language query (do not batch multiple queries together).",
@@ -200,6 +200,7 @@ const createMgrepTools = (apiKey?: string) => {
   };
 };
 
-const { mgrepSearchTool, mgrepStatusTool } = createMgrepTools(env.MIXEDBREAD_API_KEY);
-
-export { mgrepSearchTool, mgrepStatusTool };
+export type mgrepSearchTool =
+  ReturnType<typeof createMgrepTools>["mgrepSearchTool"];
+export type mgrepStatusTool =
+  ReturnType<typeof createMgrepTools>["mgrepStatusTool"];

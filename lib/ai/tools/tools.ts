@@ -1,11 +1,11 @@
 import type { ModelId } from "@airegistry/vercel-gateway";
 import type { FileUIPart, ModelMessage } from "ai";
-import { mgrepSearchTool, mgrepStatusTool } from "@/lib/ai/tools/mgrep";
+import { createMgrepTools } from "@/lib/ai/tools/mgrep";
 import {
-  getProfessorsByInstitutionTool,
-  getInstitutionsByPlaceTool,
-  searchAuthorsTool,
-  searchInstitutionsTool,
+    getProfessorsByInstitutionTool,
+    getInstitutionsByPlaceTool,
+    searchAuthorsTool,
+    searchInstitutionsTool,
 } from "@/lib/ai/tools/openalex";
 import type { Session } from "@/lib/auth";
 import type { StreamWriter } from "../types";
@@ -18,6 +18,7 @@ export function getTools({
   attachments = [],
   lastGeneratedImage = null,
   contextForLLM,
+  mixedbreadApiKey,
 }: {
   dataStream: StreamWriter;
   session: Session;
@@ -26,9 +27,14 @@ export function getTools({
   attachments: FileUIPart[];
   lastGeneratedImage: { imageUrl: string; name: string } | null;
   contextForLLM: ModelMessage[];
+  mixedbreadApiKey?: string;
 }) {
   const userId = session.user?.id ?? null;
   const anonymousSessionId = null;
+
+  const { mgrepSearchTool, mgrepStatusTool } = createMgrepTools(
+    mixedbreadApiKey
+  );
 
   return {
     mgrepSearch: mgrepSearchTool,
