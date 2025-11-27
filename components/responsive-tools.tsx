@@ -1,9 +1,9 @@
 import { Settings2, X } from "lucide-react";
 import {
-  createElement,
-  type Dispatch,
-  type SetStateAction,
-  useState,
+    createElement,
+    type Dispatch,
+    type SetStateAction,
+    useState,
 } from "react";
 import { getAppModelDefinition } from "@/lib/ai/app-models";
 import type { UiToolName } from "@/lib/ai/types";
@@ -11,10 +11,10 @@ import { useSession } from "@/providers/session-provider";
 import { enabledTools, toolDefinitions } from "./chat-features-definitions";
 import { Button } from "./ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Separator } from "./ui/separator";
@@ -67,6 +67,11 @@ export function ResponsiveTools({
 
     setTools(tool);
   };
+
+  // If no tools are enabled, hide the Tools UI entirely
+  if (enabledTools.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex items-center @[400px]:gap-2 gap-1">

@@ -9,18 +9,18 @@ import {
   useMessagePartTypesById,
 } from "@/lib/stores/hooks-message-parts";
 import { isLastArtifact } from "./is-last-artifact";
-import { CodeInterpreterMessage } from "./part/code-interpreter";
 import { DocumentToolResult } from "./part/document-common";
 import { DocumentPreview } from "./part/document-preview";
-import { GeneratedImage } from "./part/generated-image";
 import { ResearchUpdates } from "./part/message-annotations";
 import { MessageReasoning } from "./part/message-reasoning";
-import { ReadDocument } from "./part/read-document";
-import { RequestSuggestionsMessage } from "./part/request-suggestions-message";
-import { Retrieve } from "./part/retrieve";
 import { TextMessagePart } from "./part/text-message-part";
-import { UpdateDocumentMessage } from "./part/update-document-message";
-import { Weather } from "./part/weather";
+import {
+  GetInstitutionsByPlace,
+  GetProfessorsByInstitution,
+  SearchAuthors,
+  SearchInstitutions,
+} from "./part/openalex";
+import { MgrepSearch, MgrepStatus } from "./part/mgrep";
 
 type MessagePartsProps = {
   messageId: string;
@@ -169,113 +169,137 @@ function PureMessagePart({
   const researchUpdates = useResearchUpdates(messageId, partIdx, type);
   const chatStore = useChatStoreApi<ChatMessage>();
 
-  if (part.type === "tool-getWeather") {
-    return <Weather key={part.toolCallId} tool={part} />;
+  // if (part.type === "tool-getWeather") {
+  //   return <Weather key={part.toolCallId} tool={part} />;
+  // }
+
+  // if (type === "tool-createDocument") {
+  //   const { toolCallId, state } = part;
+  //   if (state === "input-available") {
+  //     const { input } = part;
+  //     return (
+  //       <div key={toolCallId}>
+  //         <DocumentPreview
+  //           args={input}
+  //           isReadonly={isReadonly}
+  //           messageId={messageId}
+  //         />
+  //       </div>
+  //     );
+  //   }
+
+  //   if (state === "output-available") {
+  //     const { output, input } = part;
+  //     const shouldShowFullPreview = isLastArtifact(
+  //       chatStore.getState().getInternalMessages(),
+  //       toolCallId
+  //     );
+
+  //     if ("error" in output) {
+  //       return (
+  //         <div className="rounded border p-2 text-red-500" key={toolCallId}>
+  //           Error: {String(output.error)}
+  //         </div>
+  //       );
+  //     }
+
+  //     return (
+  //       <div key={toolCallId}>
+  //         {shouldShowFullPreview ? (
+  //           <DocumentPreview
+  //             args={input}
+  //             isReadonly={isReadonly}
+  //             messageId={messageId}
+  //             result={output}
+  //             type="create"
+  //           />
+  //         ) : (
+  //           <DocumentToolResult
+  //             isReadonly={isReadonly}
+  //             messageId={messageId}
+  //             result={output}
+  //             type="create"
+  //           />
+  //         )}
+  //       </div>
+  //     );
+  //   }
+  // }
+
+  // if (part.type === "tool-updateDocument") {
+  //   return (
+  //     <UpdateDocumentMessage
+  //       isReadonly={isReadonly}
+  //       key={part.toolCallId}
+  //       messageId={messageId}
+  //       tool={part}
+  //     />
+  //   );
+  // }
+
+  // if (part.type === "tool-requestSuggestions") {
+  //   return (
+  //     <RequestSuggestionsMessage
+  //       isReadonly={isReadonly}
+  //       key={part.toolCallId}
+  //       messageId={messageId}
+  //       tool={part}
+  //     />
+  //   );
+  // }
+
+  // if (part.type === "tool-retrieve") {
+  //   return <Retrieve key={part.toolCallId} tool={part} />;
+  // }
+
+  // if (part.type === "tool-readDocument") {
+  //   return <ReadDocument key={part.toolCallId} tool={part} />;
+  // }
+
+  // if (part.type === "tool-codeInterpreter") {
+  //   return <CodeInterpreterMessage key={part.toolCallId} tool={part} />;
+  // }
+
+  // if (part.type === "tool-generateImage") {
+  //   return <GeneratedImage key={part.toolCallId} tool={part} />;
+  // }
+
+  // if (type === "tool-deepResearch") {
+  //   return renderDeepResearchPart({
+  //     part,
+  //     researchUpdates,
+  //     chatStore,
+  //     messageId,
+  //     isReadonly,
+  //   });
+  // }
+
+  // if (type === "tool-webSearch") {
+  //   return renderWebSearchPart({ part, researchUpdates });
+  // }
+
+  if (part.type === "tool-getProfessorsByInstitution") {
+    return <GetProfessorsByInstitution key={part.toolCallId} tool={part} />;
   }
 
-  if (type === "tool-createDocument") {
-    const { toolCallId, state } = part;
-    if (state === "input-available") {
-      const { input } = part;
-      return (
-        <div key={toolCallId}>
-          <DocumentPreview
-            args={input}
-            isReadonly={isReadonly}
-            messageId={messageId}
-          />
-        </div>
-      );
-    }
-
-    if (state === "output-available") {
-      const { output, input } = part;
-      const shouldShowFullPreview = isLastArtifact(
-        chatStore.getState().getInternalMessages(),
-        toolCallId
-      );
-
-      if ("error" in output) {
-        return (
-          <div className="rounded border p-2 text-red-500" key={toolCallId}>
-            Error: {String(output.error)}
-          </div>
-        );
-      }
-
-      return (
-        <div key={toolCallId}>
-          {shouldShowFullPreview ? (
-            <DocumentPreview
-              args={input}
-              isReadonly={isReadonly}
-              messageId={messageId}
-              result={output}
-              type="create"
-            />
-          ) : (
-            <DocumentToolResult
-              isReadonly={isReadonly}
-              messageId={messageId}
-              result={output}
-              type="create"
-            />
-          )}
-        </div>
-      );
-    }
+  if (part.type === "tool-getInstitutionsByPlace") {
+    return <GetInstitutionsByPlace key={part.toolCallId} tool={part} />;
   }
 
-  if (part.type === "tool-updateDocument") {
-    return (
-      <UpdateDocumentMessage
-        isReadonly={isReadonly}
-        key={part.toolCallId}
-        messageId={messageId}
-        tool={part}
-      />
-    );
+  if (part.type === "tool-searchAuthors") {
+    return <SearchAuthors key={part.toolCallId} tool={part} />;
   }
 
-  if (part.type === "tool-requestSuggestions") {
-    return (
-      <RequestSuggestionsMessage
-        isReadonly={isReadonly}
-        key={part.toolCallId}
-        messageId={messageId}
-        tool={part}
-      />
-    );
+  if (part.type === "tool-searchInstitutions") {
+    return <SearchInstitutions key={part.toolCallId} tool={part} />;
   }
 
-  if (part.type === "tool-retrieve") {
-    return <Retrieve key={part.toolCallId} tool={part} />;
+  if (part.type === "tool-mgrepSearch") {
+    return <MgrepSearch key={part.toolCallId} tool={part} />;
   }
 
-  if (part.type === "tool-readDocument") {
-    return <ReadDocument key={part.toolCallId} tool={part} />;
-  }
-
-  if (part.type === "tool-codeInterpreter") {
-    return <CodeInterpreterMessage key={part.toolCallId} tool={part} />;
-  }
-
-  if (part.type === "tool-generateImage") {
-    return <GeneratedImage key={part.toolCallId} tool={part} />;
-  }
-
-  if (type === "tool-deepResearch") {
-    return renderDeepResearchPart({
-      part,
-      researchUpdates,
-      chatStore,
-      messageId,
-      isReadonly,
-    });
-  }
-
-  if (type === "tool-webSearch") {
-    return renderWebSearchPart({ part, researchUpdates });
+  if (part.type === "tool-mgrepStatus") {
+    return <MgrepStatus key={part.toolCallId} tool={part} />;
   }
 
   return null;

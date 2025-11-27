@@ -1,39 +1,30 @@
 "use client";
 
-import {
-  ChevronsUpDown,
-  LogIn,
-  LogOut,
-  Moon,
-  Sparkles,
-  Sun,
-} from "lucide-react";
+import { ChevronsUpDown, LogIn, LogOut, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    useSidebar,
 } from "@/components/ui/sidebar";
-import { useGetCredits } from "@/hooks/chat-sync-hooks";
 import authClient from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/providers/session-provider";
 
 export function SidebarUserNav() {
   const { data: session } = useSession();
-  const { credits } = useGetCredits();
   const { setTheme, resolvedTheme } = useTheme();
   const router = useRouter();
   const { isMobile, state } = useSidebar();
@@ -89,10 +80,6 @@ export function SidebarUserNav() {
               >
                 <span className="truncate font-medium">
                   {user.name || user.email}
-                </span>
-                <span className="flex items-center gap-1 truncate text-xs">
-                  <Sparkles className="size-3" />
-                  {credits ?? 0} Credits
                 </span>
               </div>
               <ChevronsUpDown
