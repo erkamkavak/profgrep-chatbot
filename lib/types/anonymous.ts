@@ -19,18 +19,18 @@ export interface AnonymousMessage extends DBMessage {
   parts: ChatMessage["parts"];
 }
 
+// OpenRouter free models available for anonymous users
 const AVAILABLE_MODELS: AppModelId[] = [
-  "google/gemini-2.0-flash",
-  "openai/gpt-5-mini",
-  "openai/gpt-5-nano",
-  "openai/gpt-4o-mini",
-  "cohere/command-a",
+  "openrouter:x-ai/grok-4.1-fast:free",
+  "openrouter:z-ai/glm-4.5-air:free",
+  "openrouter:moonshotai/kimi-k2:free",
+  "openrouter:meituan/longcat-flash-chat:free",
 ];
 
 export const ANONYMOUS_LIMITS = {
   CREDITS: process.env.NODE_ENV === "production" ? 10 : 1000,
   AVAILABLE_MODELS,
-  AVAILABLE_TOOLS: ["createDocument", "updateDocument"] satisfies ToolName[],
+  AVAILABLE_TOOLS: ["getInstitutionsByPlace", "getProfessorsByInstitution", "mgrepSearch", "searchAuthors", "searchInstitutions"] satisfies ToolName[],
   SESSION_DURATION: 2_147_483_647, // Max session time
   // Rate limiting for anonymous users based on IP
   RATE_LIMIT: {
