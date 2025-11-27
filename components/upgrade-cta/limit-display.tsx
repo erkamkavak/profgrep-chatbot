@@ -98,10 +98,13 @@ export function LimitDisplay({
   }
 
   const variant = forceVariant ?? "credits";
+  if (variant === "credits") {
+    return null;
+  }
   const config = VARIANT_CONFIG[variant];
 
   // Credits variant relies on credits API state
-  if (variant === "credits" && isLoadingCredits) {
+  if (isLoadingCredits) {
     return null;
   }
 

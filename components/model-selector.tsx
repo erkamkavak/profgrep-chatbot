@@ -2,16 +2,15 @@
 
 import { memo, useEffect, useMemo, useState } from "react";
 import {
-  ModelSelectorBase,
-  type ModelSelectorBaseItem,
+    ModelSelectorBase,
+    type ModelSelectorBaseItem,
 } from "@/components/model-selector-base";
-import { LoginCtaBanner } from "@/components/upgrade-cta/login-cta-banner";
 import type { AppModelDefinition } from "@/lib/ai/app-models";
 import {
-  type AppModelId,
-  chatModels,
-  getAppModelDefinition,
-  getProviderFromModelId,
+    type AppModelId,
+    chatModels,
+    getAppModelDefinition,
+    getProviderFromModelId,
 } from "@/lib/ai/app-models";
 import { getProviderKeys, type ProviderId } from "@/lib/provider-keys";
 import { ANONYMOUS_LIMITS } from "@/lib/types/anonymous";
@@ -101,13 +100,6 @@ export function PureModelSelector({
       topContent={
         hasDisabledModels ? (
           <div className="space-y-2 p-3">
-            {isAnonymous && (
-              <LoginCtaBanner
-                compact
-                message="Sign in to unlock all models."
-                variant="default"
-              />
-            )}
             {hasProviderDisabledModels && !isAnonymous && (
               <div className="rounded-md bg-muted/50 px-3 py-2 text-muted-foreground text-xs">
                 Add API keys in Settings to unlock more models.
