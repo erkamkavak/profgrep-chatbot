@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "",
     "dev": "next dev",
-    "build": "tsx lib/db/migrate && next build",
+    "build": "next build",
     "start": "next start",
     "prod": "bun run build && bun run start",
     "lint": "bunx ultracite check",

@@ -84,8 +84,8 @@ type deepResearchTool = InferUITool<ReturnType<typeof deepResearch>>;
 type readDocumentTool = InferUITool<ReturnType<typeof readDocument>>;
 type generateImageTool = InferUITool<ReturnType<typeof generateImage>>;
 type webSearchTool = InferUITool<ReturnType<typeof tavilyWebSearch>>;
-type mgrepSearchTool = InferUITool<typeof mgrepSearch>;
-type mgrepStatusTool = InferUITool<typeof mgrepStatus>;
+type mgrepSearchTool = InferUITool<mgrepSearch>;
+type mgrepStatusTool = InferUITool<mgrepStatus>;
 type getProfessorsByInstitutionTool = InferUITool<
   ReturnType<typeof getProfessorsByInstitution>
 >;
