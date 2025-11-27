@@ -4,7 +4,7 @@ const MODEL_REGISTRY_URL = "airegistry.app";
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
-  cacheComponents: true,
+  cacheComponents: false,
 
   transpilePackages: ["@airegistry/vercel-gateway"],
   experimental: {
@@ -63,3 +63,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+initOpenNextCloudflareForDev();

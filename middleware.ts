@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getSessionCookie } from "better-auth/cookies";
 
 function isPublicApiRoute(pathname: string): boolean {
   return (
@@ -36,43 +36,39 @@ function isAuthPage(pathname: string): boolean {
   return pathname.startsWith("/login") || pathname.startsWith("/register");
 }
 
-export async function proxy(req: NextRequest) {
+// Edge middleware – cookie-based, no Node.js APIs
+export async function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const { pathname } = url;
 
   if (isPublicApiRoute(pathname) || isMetadataRoute(pathname)) {
-    return;
+    return NextResponse.next();
   }
 
-  const session = await auth.api.getSession({ headers: req.headers });
-  const isLoggedIn = !!session?.user;
+  const sessionCookie = getSessionCookie(req);
+  const isLoggedIn = !!sessionCookie;
 
+  // Logged-in users shouldn't see auth pages
   if (isLoggedIn && isAuthPage(pathname)) {
     return NextResponse.redirect(new URL("/", url));
   }
 
+  // Public pages (including auth pages) are allowed regardless
   if (isAuthPage(pathname) || isPublicPage(pathname)) {
-    return;
+    return NextResponse.next();
   }
 
+  // For protected pages, optimistically redirect if no session cookie
   if (!isLoggedIn) {
     return NextResponse.redirect(new URL("/login", url));
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, opengraph-image (favicon and og image)
-     * - manifest files (.json, .webmanifest)
-     * - Images and other static assets (.svg, .png, .jpg, .jpeg, .gif, .webp, .ico)
-     * - models
-     * - compare
-     */
+    
     "/((?!api|_next/static|_next/image|favicon.ico|opengraph-image|manifest|models|compare|privacy|terms|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json|webmanifest)$).*)",
   ],
 };
