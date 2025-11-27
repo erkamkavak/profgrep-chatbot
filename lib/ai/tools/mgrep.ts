@@ -1,9 +1,10 @@
 import { tool } from "ai";
 import { z } from "zod";
 import Mixedbread from "@mixedbread/sdk";
+import { env } from "@/lib/env";
 
 function createMixedbreadClient(apiKey?: string) {
-  const key = apiKey || process.env.MXBAI_API_KEY || process.env.MIXEDBREAD_API_KEY;
+  const key = apiKey || env.MIXEDBREAD_API_KEY;
   return new Mixedbread({ apiKey: key });
 }
 
@@ -199,8 +200,6 @@ const createMgrepTools = (apiKey?: string) => {
   };
 };
 
-const { mgrepSearchTool, mgrepStatusTool } = createMgrepTools(
-  process.env.MIXEDBREAD_API_KEY
-);
+const { mgrepSearchTool, mgrepStatusTool } = createMgrepTools(env.MIXEDBREAD_API_KEY);
 
 export { mgrepSearchTool, mgrepStatusTool };

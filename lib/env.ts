@@ -6,7 +6,7 @@ export const env = createEnv({
     // Required core
     DATABASE_URL: z.string().min(1),
     AUTH_SECRET: z.string().min(1),
-    BLOB_READ_WRITE_TOKEN: z.string().min(1),
+    BLOB_READ_WRITE_TOKEN: z.string().optional(),
 
     // One of the authentication providers must be configured
     AUTH_GOOGLE_ID: z.string().optional(),
@@ -24,6 +24,8 @@ export const env = createEnv({
     // Optional features
     REDIS_URL: z.string().optional(),
     OPENAI_API_KEY: z.string().optional(),
+    OPENROUTER_API_KEY: z.string().optional(),
+    MIXEDBREAD_API_KEY: z.string().optional(),
     TAVILY_API_KEY: z.string().optional(),
     EXA_API_KEY: z.string().optional(),
     FIRECRAWL_API_KEY: z.string().optional(),
