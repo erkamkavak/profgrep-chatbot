@@ -1,5 +1,5 @@
-import { ArrowUpRightIcon, Cpu } from "lucide-react";
 import Link from "next/link";
+import { GraduationCap } from "lucide-react";
 import { NewChatButton } from "@/components/new-chat-button";
 import { SearchChatsButton } from "@/components/search-chats";
 import { SidebarTopRow } from "@/components/sidebar-top-row";
@@ -34,21 +34,15 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SearchChatsButton />
           </SidebarMenuItem>
+
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Models">
+            <SidebarMenuButton asChild>
               <Link
-                className="flex items-center"
-                href="https://airegistry.app"
-                rel="noopener noreferrer"
-                target="_blank"
+                className="flex items-center gap-2"
+                href={{ pathname: "/saved-professors" }}
               >
-                <Cpu className="size-4" />
-                <div className="flex items-center gap-1">
-                  <span className="group-data-[collapsible=icon]:hidden">
-                    Models
-                  </span>
-                  <ArrowUpRightIcon className="size-3" />
-                </div>
+                <GraduationCap className="h-4 w-4" />
+                <span>Saved Professors</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -67,3 +61,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
