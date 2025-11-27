@@ -1,47 +1,47 @@
 import {
-  convertToModelMessages,
-  createUIMessageStream,
-  JsonToSseTransformStream,
+    convertToModelMessages,
+    createUIMessageStream,
+    JsonToSseTransformStream,
 } from "ai";
 import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
 import { after } from "next/server";
 import {
-  createResumableStreamContext,
-  type ResumableStreamContext,
+    createResumableStreamContext,
+    type ResumableStreamContext,
 } from "resumable-stream";
 import {
-  type AppModelDefinition,
-  type AppModelId,
-  getAppModelDefinition,
+    type AppModelDefinition,
+    type AppModelId,
+    getAppModelDefinition,
 } from "@/lib/ai/app-models";
 import { createCoreChatAgent } from "@/lib/ai/core-chat-agent";
 import { ChatSDKError } from "@/lib/ai/errors";
 import {
-  generateFollowupSuggestions,
-  streamFollowupSuggestions,
+    generateFollowupSuggestions,
+    streamFollowupSuggestions,
 } from "@/lib/ai/followup-suggestions";
 import { systemPrompt } from "@/lib/ai/prompts";
 import { calculateMessagesTokens } from "@/lib/ai/token-utils";
 import { allTools } from "@/lib/ai/tools/tools-definitions";
 import type { ChatMessage, ToolName } from "@/lib/ai/types";
 import {
-  getAnonymousSession,
-  setAnonymousSession,
+    getAnonymousSession,
+    setAnonymousSession,
 } from "@/lib/anonymous-session-server";
 import { auth } from "@/lib/auth";
 import { createAnonymousSession } from "@/lib/create-anonymous-session";
 import {
-  getBaseModelCostByModelId,
+    getBaseModelCostByModelId,
 } from "@/lib/credits/credits-utils";
 import {
-  getChatById,
-  getMessageById,
-  getProjectById,
-  getUserById,
-  saveChat,
-  saveMessage,
-  updateMessage,
+    getChatById,
+    getMessageById,
+    getProjectById,
+    getUserById,
+    saveChat,
+    saveMessage,
+    updateMessage,
 } from "@/lib/db/queries";
 import { env } from "@/lib/env";
 import { MAX_INPUT_TOKENS } from "@/lib/limits/tokens";
@@ -145,30 +145,6 @@ async function handleAnonymousSession({
   let anonymousSession = await getAnonymousSession();
   if (!anonymousSession) {
     anonymousSession = await createAnonymousSession();
-  }
-
-  // Check message limits
-  if (anonymousSession.remainingCredits <= 0) {
-    log.info("Anonymous message limit reached");
-    return {
-      anonymousSession: null as any,
-      error: new Response(
-        JSON.stringify({
-          error: `You've used all ${ANONYMOUS_LIMITS.CREDITS} free messages. Sign up to continue chatting with unlimited access!`,
-          type: "ANONYMOUS_LIMIT_EXCEEDED",
-          maxMessages: ANONYMOUS_LIMITS.CREDITS,
-          suggestion:
-            "Create an account to get unlimited messages and access to more AI models",
-        }),
-        {
-          status: 402,
-          headers: {
-            "Content-Type": "application/json",
-            ...(rateLimitResult.headers || {}),
-          },
-        }
-      ),
-    };
   }
 
   // Validate model for anonymous users
