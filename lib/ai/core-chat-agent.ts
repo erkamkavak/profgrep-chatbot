@@ -98,7 +98,7 @@ export async function createCoreChatAgent({
     system,
     messages: contextForLLM,
     stopWhen: [
-      stepCountIs(5),
+      stepCountIs(15),
       ({ steps }) => {
         return steps.some((step) => {
           const toolResults = step.content;

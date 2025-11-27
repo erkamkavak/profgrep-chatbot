@@ -5,7 +5,7 @@ import { getMaxToolCost } from "./credits-utils";
 export async function reserveCredits({
   userId,
   baseModelCost,
-  maxSteps = 5,
+  maxSteps = 15,
 }: {
   userId: string;
   baseModelCost: number;
