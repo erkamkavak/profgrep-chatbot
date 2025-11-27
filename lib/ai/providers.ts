@@ -1,115 +1,104 @@
-import type { AnthropicProviderOptions } from "@ai-sdk/anthropic";
-import { gateway } from "@ai-sdk/gateway";
-import type { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
-import { type OpenAIResponsesProviderOptions, openai } from "@ai-sdk/openai";
-import type { ModelId } from "@airegistry/vercel-gateway";
-import { getModelAndProvider } from "@airegistry/vercel-gateway";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createXai } from "@ai-sdk/xai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { extractReasoningMiddleware, wrapLanguageModel } from "ai";
+import { env } from "@/lib/env";
+import type { ProviderKeys } from "../provider-keys";
 import type { ImageModelId } from "../models/image-model-id";
-import type { AppModelId } from "./app-models";
-import { getAppModelDefinition, getImageModelDefinition } from "./app-models";
+import type { AppModelId, ModelId, ModelProviderId } from "./app-models";
+import {
+  getAppModelDefinition,
+  getImageModelDefinition,
+  getProviderFromModelId,
+} from "./app-models";
 
-const _telemetryConfig = {
-  telemetry: {
-    isEnabled: true,
-    functionId: "get-language-model",
-  },
-};
+// Create provider instances with API keys
+function createProviderWithKey(providerId: ModelProviderId, apiKey?: string) {
+  switch (providerId) {
+    case "openai":
+      return apiKey ? createOpenAI({ apiKey }) : null;
+    case "anthropic":
+      return apiKey ? createAnthropic({ apiKey }) : null;
+    case "google":
+      return apiKey ? createGoogleGenerativeAI({ apiKey }) : null;
+    case "xai":
+      return apiKey ? createXai({ apiKey }) : null;
+    case "openrouter":
+      // OpenRouter uses server-side API key from env
+      return createOpenRouter({ apiKey: apiKey || env.OPENROUTER_API_KEY });
+    default:
+      return null;
+  }
+}
 
-export const getLanguageModel = (modelId: ModelId) => {
-  const model = getAppModelDefinition(modelId);
-  const languageProvider = gateway(model.id);
+// Get language model with user-provided API keys
+// Accepts string for backwards compatibility with external model IDs
+export const getLanguageModel = (
+  modelId: ModelId | string,
+  providerKeys?: ProviderKeys
+) => {
+  // For external model IDs (from @airegistry/vercel-gateway), use OpenRouter
+  const isExternalModelId = !modelId.includes(":") || modelId.startsWith("openrouter:");
+  
+  if (isExternalModelId && !modelId.startsWith("openrouter:")) {
+    // External model ID - route through OpenRouter
+    const openrouter = createOpenRouter({ apiKey: providerKeys?.openrouter || env.OPENROUTER_API_KEY });
+    return openrouter(modelId);
+  }
+  
+  const model = getAppModelDefinition(modelId as ModelId);
+  const providerId = getProviderFromModelId(modelId as ModelId);
 
-  // Wrap with reasoning middleware if the model supports reasoning
-  if (model.reasoning && model.owned_by === "xai") {
-    console.log("Wrapping reasoning middleware for", model.id);
+  // Get the appropriate provider
+  const apiKey = providerKeys?.[providerId];
+  const provider = createProviderWithKey(providerId, apiKey);
+
+  if (!provider) {
+    throw new Error(
+      `Provider ${providerId} not configured. Please add your API key in Settings.`
+    );
+  }
+
+  // Create the language model
+  let languageModel: any;
+
+  if (providerId === "openrouter") {
+    // OpenRouter uses the full model path
+    languageModel = provider(model.apiModelId);
+  } else {
+    // Other providers use just the model ID
+    languageModel = provider(model.apiModelId);
+  }
+
+  // Wrap with reasoning middleware if needed
+  if (model.reasoning) {
     return wrapLanguageModel({
-      model: languageProvider,
+      model: languageModel,
       middleware: extractReasoningMiddleware({ tagName: "think" }),
     });
   }
 
-  return languageProvider;
+  return languageModel;
 };
 
-export const getImageModel = (modelId: ImageModelId) => {
+// Get image model (still uses server-side OpenAI key)
+export const getImageModel = (modelId: ImageModelId, providerKeys?: ProviderKeys) => {
   const model = getImageModelDefinition(modelId);
-  const { model: modelIdShort } = getModelAndProvider(modelId as ModelId);
-
   if (model.owned_by === "openai") {
-    return openai.image(modelIdShort);
+    const apiKey = providerKeys?.openai;
+    if (!apiKey) {
+      throw new Error("OpenAI API key required for image generation");
+    }
+    const openai = createOpenAI({ apiKey });
+    return openai.image(model.id.replace("openai/", "") as any);
   }
-  throw new Error(`Provider ${model.owned_by} not supported`);
-};
-
-const _MODEL_ALIASES = {
-  "chat-model": getLanguageModel("openai/gpt-4o-mini"),
-  "title-model": getLanguageModel("openai/gpt-4o-mini"),
-  "artifact-model": getLanguageModel("openai/gpt-4o-mini"),
-  "chat-model-reasoning": getLanguageModel("openai/o3-mini"),
+  throw new Error(`Provider ${model.owned_by} not supported for image generation`);
 };
 
 export const getModelProviderOptions = (
-  providerModelId: AppModelId
-):
-  | {
-      openai: OpenAIResponsesProviderOptions;
-    }
-  | {
-      anthropic: AnthropicProviderOptions;
-    }
-  | {
-      xai: Record<string, never>;
-    }
-  | {
-      google: GoogleGenerativeAIProviderOptions;
-    }
-  | Record<string, never> => {
-  const model = getAppModelDefinition(providerModelId);
-  if (model.owned_by === "openai") {
-    if (model.reasoning) {
-      return {
-        openai: {
-          reasoningSummary: "auto",
-          ...(model.id === "openai/gpt-5" ||
-          model.id === "openai/gpt-5-mini" ||
-          model.id === "openai/gpt-5-nano"
-            ? { reasoningEffort: "low" }
-            : {}),
-        } satisfies OpenAIResponsesProviderOptions,
-      };
-    }
-    return { openai: {} };
-  }
-  if (model.owned_by === "anthropic") {
-    if (model.reasoning) {
-      return {
-        anthropic: {
-          thinking: {
-            type: "enabled",
-            budgetTokens: 4096,
-          },
-        } satisfies AnthropicProviderOptions,
-      };
-    }
-    return { anthropic: {} };
-  }
-  if (model.owned_by === "xai") {
-    return {
-      xai: {},
-    };
-  }
-  if (model.owned_by === "google") {
-    if (model.reasoning) {
-      return {
-        google: {
-          thinkingConfig: {
-            thinkingBudget: 10_000,
-          },
-        },
-      };
-    }
-    return { google: {} };
-  }
+  _providerModelId: AppModelId
+): Record<string, never> => {
   return {};
 };

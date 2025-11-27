@@ -7,6 +7,7 @@ import { markdownJoinerTransform } from "@/lib/ai/markdown-joiner-transform";
 import { getLanguageModel, getModelProviderOptions } from "@/lib/ai/providers";
 import { getTools } from "@/lib/ai/tools/tools";
 import type { ChatMessage, StreamWriter, ToolName } from "@/lib/ai/types";
+import type { ProviderKeys } from "@/lib/provider-keys";
 import { replaceFilePartUrlByBinaryDataInMessages } from "@/lib/utils/download-assets";
 
 export async function createCoreChatAgent({
@@ -21,6 +22,7 @@ export async function createCoreChatAgent({
   messageId,
   dataStream,
   onError,
+  providerKeys,
 }: {
   system: string;
   userMessage: ChatMessage;
@@ -33,6 +35,7 @@ export async function createCoreChatAgent({
   messageId: string;
   dataStream: StreamWriter;
   onError?: (error: unknown) => void;
+  providerKeys?: ProviderKeys;
 }) {
   const modelDefinition = getAppModelDefinition(selectedModelId);
 
@@ -43,15 +46,15 @@ export async function createCoreChatAgent({
   const lastGeneratedImage = getRecentGeneratedImage(messages);
 
   let explicitlyRequestedTools: ToolName[] | null = null;
-  if (selectedTool === "deepResearch") {
-    explicitlyRequestedTools = ["deepResearch"];
-  } else if (selectedTool === "webSearch") {
-    explicitlyRequestedTools = ["webSearch"];
-  } else if (selectedTool === "generateImage") {
-    explicitlyRequestedTools = ["generateImage"];
-  } else if (selectedTool === "createDocument") {
-    explicitlyRequestedTools = ["createDocument", "updateDocument"];
-  }
+  // if (selectedTool === "deepResearch") {
+  //   explicitlyRequestedTools = ["deepResearch"];
+  // } else if (selectedTool === "webSearch") {
+  //   explicitlyRequestedTools = ["webSearch"];
+  // } else if (selectedTool === "generateImage") {
+  //   explicitlyRequestedTools = ["generateImage"];
+  // } else if (selectedTool === "createDocument") {
+  //   explicitlyRequestedTools = ["createDocument", "updateDocument"];
+  // }
 
   addExplicitToolRequestToMessages(
     messages,
@@ -71,7 +74,7 @@ export async function createCoreChatAgent({
 
   // Create the streamText result
   const result = streamText({
-    model: getLanguageModel(modelDefinition.apiModelId),
+    model: getLanguageModel(modelDefinition.id, providerKeys),
     system,
     messages: contextForLLM,
     stopWhen: [
