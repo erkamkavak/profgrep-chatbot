@@ -59,7 +59,7 @@ export const PROVIDER_CONFIGS: Record<ProviderId, ProviderConfig> = {
     description:
       "Vector search and file embeddings via Mixedbread. Used for the mgrep professor search.",
     keyPlaceholder: "mxb_...",
-    docsUrl: "https://docs.mixedbread.ai/docs/introduction",
+    docsUrl: "https://www.mixedbread.com/",
   },
 };
 

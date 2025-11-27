@@ -170,9 +170,15 @@ export const getProfessorsByInstitutionTool = ({
             ? [a.last_known_institution]
             : [];
 
-          const matchedInstitution = lastKnownList.find(
-            (inst: any) => inst?.id === instOpenAlexId
-          );
+          const normalizeId = (id: string | null | undefined) =>
+            id ? id.split("/").pop() : null;
+
+          const targetInstKey = normalizeId(instOpenAlexId);
+
+          const matchedInstitution = lastKnownList.find((inst: any) => {
+            const instKey = normalizeId(inst?.id);
+            return instKey && targetInstKey && instKey === targetInstKey;
+          });
 
           const lastInstitutionName =
             matchedInstitution?.display_name ??
