@@ -57,10 +57,10 @@ export type SiteConfig = {
 };
 
 export const siteConfig: SiteConfig = {
-  githubUrl: "https://github.com/franciscomoretti/sparka",
-  appPrefix: "sparka-ai",
+  githubUrl: "https://github.com/erkamkavak/profgrep-chatbot",
+  appPrefix: "profgrep-ai",
 
-  appName: "Sparka AI",
+  appName: "ProfGrep",
   organization: {
     name: "Sparka AI Ltd",
     contact: {

@@ -11,15 +11,15 @@ import { siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sparka.ai"),
-  title: "Sparka AI - Production-Ready AI Chat Template",
+  title: "ProfGrep - Academic Professor Search",
   description:
-    "Build your own multi-model AI chat app with 120+ models, authentication, streaming, and advanced features.",
+    "Find academic professors and their research using natural language queries.",
   openGraph: {
-    siteName: "Sparka AI",
+    siteName: "ProfGrep",
     url: "https://sparka.ai",
-    title: "Sparka AI - Production-Ready AI Chat Template",
+    title: "ProfGrep - Academic Professor Search",
     description:
-      "Build your own multi-model AI chat app with 120+ models, authentication, streaming, and advanced features.",
+      "Find academic professors and their research using natural language queries.",
   },
 };
 

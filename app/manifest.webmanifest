@@ -1,7 +1,7 @@
 {
-  "name": "Sparka AI - Production-Ready AI Chat Template",
-  "short_name": "Sparka AI",
-  "description": "Build your own multi-model AI chat app with 120+ models, authentication, streaming, and advanced features.",
+  "name": "ProfGrep - Academic Professor Search",
+  "short_name": "ProfGrep",
+  "description": "Find academic professors and their research using natural language queries.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
