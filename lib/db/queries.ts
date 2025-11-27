@@ -26,6 +26,7 @@ import {
   message,
   type Part,
   part,
+  professorsProfile,
   project,
   type Suggestion,
   suggestion,
@@ -39,6 +40,124 @@ export async function getUserByEmail(email: string): Promise<User[]> {
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
     console.error("Failed to get user from database");
+    throw error;
+  }
+}
+
+export async function getProfessorsProfiles({
+  userId,
+  anonymousSessionId,
+}: {
+  userId: string | null;
+  anonymousSessionId: string | null;
+}) {
+  try {
+    return await db
+      .select()
+      .from(professorsProfile)
+      .where(
+        and(
+          userId
+            ? eq(professorsProfile.userId, userId)
+            : isNull(professorsProfile.userId),
+          anonymousSessionId
+            ? eq(professorsProfile.anonymousSessionId, anonymousSessionId)
+            : isNull(professorsProfile.anonymousSessionId),
+        ),
+      );
+  } catch (error) {
+    console.error("Failed to get professors profiles from database", error);
+    throw error;
+  }
+}
+
+export async function getProfessorsProfileByInstitution({
+  userId,
+  anonymousSessionId,
+  institutionId,
+}: {
+  userId: string | null;
+  anonymousSessionId: string | null;
+  institutionId: string;
+}) {
+  try {
+    const [profile] = await db
+      .select()
+      .from(professorsProfile)
+      .where(
+        and(
+          userId
+            ? eq(professorsProfile.userId, userId)
+            : isNull(professorsProfile.userId),
+          anonymousSessionId
+            ? eq(professorsProfile.anonymousSessionId, anonymousSessionId)
+            : isNull(professorsProfile.anonymousSessionId),
+          eq(professorsProfile.institutionId, institutionId),
+        ),
+      )
+      .limit(1);
+    return profile ?? null;
+  } catch (error) {
+    console.error(
+      "Failed to get professors profile by institution from database",
+      error,
+    );
+    throw error;
+  }
+}
+
+export async function upsertProfessorsProfile({
+  userId,
+  anonymousSessionId,
+  institutionId,
+  storeName,
+  markdown,
+}: {
+  userId: string | null;
+  anonymousSessionId: string | null;
+  institutionId: string;
+  storeName: string;
+  markdown: string;
+}) {
+  try {
+    const [existing] = await db
+      .select()
+      .from(professorsProfile)
+      .where(
+        and(
+          userId
+            ? eq(professorsProfile.userId, userId)
+            : isNull(professorsProfile.userId),
+          anonymousSessionId
+            ? eq(professorsProfile.anonymousSessionId, anonymousSessionId)
+            : isNull(professorsProfile.anonymousSessionId),
+          eq(professorsProfile.institutionId, institutionId),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(professorsProfile)
+        .set({ markdown, storeName, updatedAt: new Date() })
+        .where(eq(professorsProfile.id, existing.id));
+      return existing.id;
+    }
+
+    const [inserted] = await db
+      .insert(professorsProfile)
+      .values({
+        userId,
+        anonymousSessionId,
+        institutionId,
+        storeName,
+        markdown,
+      })
+      .returning({ id: professorsProfile.id });
+
+    return inserted.id;
+  } catch (error) {
+    console.error("Failed to upsert professors profile in database", error);
     throw error;
   }
 }

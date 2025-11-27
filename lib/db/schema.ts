@@ -325,4 +325,27 @@ export const verification = pgTable("verification", {
     .notNull(),
 });
 
+export const professorsProfile = pgTable(
+  "ProfessorsProfile",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    userId: text("userId").references(() => user.id, {
+      onDelete: "cascade",
+    }),
+    anonymousSessionId: text("anonymousSessionId"),
+    institutionId: text("institutionId").notNull(),
+    storeName: text("storeName").notNull(),
+    markdown: text("markdown").notNull(),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (t) => ({
+    ProfessorsProfile_user_inst_idx: index(
+      "ProfessorsProfile_user_inst_idx",
+    ).on(t.userId, t.anonymousSessionId, t.institutionId),
+  }),
+);
+
+export type ProfessorsProfile = InferSelectModel<typeof professorsProfile>;
+
 export const schema = { user, session, account, verification };
