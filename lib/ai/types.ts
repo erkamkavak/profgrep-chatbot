@@ -14,6 +14,16 @@ import type { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import type { retrieve } from "@/lib/ai/tools/retrieve";
 import type { updateDocument } from "@/lib/ai/tools/update-document";
 import type { tavilyWebSearch } from "@/lib/ai/tools/web-search";
+import type {
+  mgrepSearchTool as mgrepSearch,
+  mgrepStatusTool as mgrepStatus,
+} from "@/lib/ai/tools/mgrep";
+import type {
+  getProfessorsByInstitutionTool as getProfessorsByInstitution,
+  getInstitutionsByPlaceTool as getInstitutionsByPlace,
+  searchAuthorsTool as searchAuthors,
+  searchInstitutionsTool as searchInstitutions,
+} from "@/lib/ai/tools/openalex";
 import type { Suggestion } from "@/lib/db/schema";
 import type { ArtifactKind } from "../artifacts/artifact-kind";
 import type { AppModelId } from "./app-models";
@@ -21,16 +31,22 @@ import type { createDocumentTool as createDocument } from "./tools/create-docume
 import type { ResearchUpdate } from "./tools/research-updates-schema";
 
 export const toolNameSchema = z.enum([
-  "getWeather",
-  "createDocument",
-  "updateDocument",
-  "requestSuggestions",
-  "readDocument",
-  "retrieve",
-  "webSearch",
-  "codeInterpreter",
-  "generateImage",
-  "deepResearch",
+  // "getWeather",
+  // "createDocument",
+  // "updateDocument",
+  // "requestSuggestions",
+  // "readDocument",
+  // "retrieve",
+  // "webSearch",
+  // "codeInterpreter",
+  // "generateImage",
+  // "deepResearch",
+  "mgrepSearch",
+  "mgrepStatus",
+  "getProfessorsByInstitution",
+  "getInstitutionsByPlace",
+  "searchAuthors",
+  "searchInstitutions",
 ]);
 
 const _ = toolNameSchema.options satisfies ToolName[];
@@ -38,10 +54,10 @@ const _ = toolNameSchema.options satisfies ToolName[];
 type ToolNameInternal = z.infer<typeof toolNameSchema>;
 
 export const frontendToolsSchema = z.enum([
-  "webSearch",
-  "deepResearch",
-  "generateImage",
-  "createDocument",
+  // "webSearch",
+  // "deepResearch",
+  // "generateImage",
+  // "createDocument",
 ]);
 
 const __ = frontendToolsSchema.options satisfies ToolNameInternal[];
@@ -50,10 +66,10 @@ export type UiToolName = z.infer<typeof frontendToolsSchema>;
 export const messageMetadataSchema = z.object({
   createdAt: z.date(),
   parentMessageId: z.string().nullable(),
-  selectedModel: z.custom<AppModelId>((val) => typeof val === "string"),
+  selectedModel: z.custom<AppModelId>((val: unknown) => typeof val === "string"),
   isPartial: z.boolean().optional(),
   selectedTool: frontendToolsSchema.optional(),
-  usage: z.custom<LanguageModelUsage | undefined>((_val) => true).optional(),
+  usage: z.custom<LanguageModelUsage | undefined>((_val: unknown) => true).optional(),
 });
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
@@ -68,20 +84,34 @@ type deepResearchTool = InferUITool<ReturnType<typeof deepResearch>>;
 type readDocumentTool = InferUITool<ReturnType<typeof readDocument>>;
 type generateImageTool = InferUITool<ReturnType<typeof generateImage>>;
 type webSearchTool = InferUITool<ReturnType<typeof tavilyWebSearch>>;
+type mgrepSearchTool = InferUITool<typeof mgrepSearch>;
+type mgrepStatusTool = InferUITool<typeof mgrepStatus>;
+type getProfessorsByInstitutionTool = InferUITool<
+  ReturnType<typeof getProfessorsByInstitution>
+>;
+type getInstitutionsByPlaceTool = InferUITool<typeof getInstitutionsByPlace>;
+type searchAuthorsTool = InferUITool<typeof searchAuthors>;
+type searchInstitutionsTool = InferUITool<typeof searchInstitutions>;
 type codeInterpreterTool = InferUITool<typeof codeInterpreter>;
 type retrieveTool = InferUITool<typeof retrieve>;
 
 export type ChatTools = {
-  getWeather: weatherTool;
-  createDocument: createDocumentTool;
-  updateDocument: updateDocumentTool;
-  requestSuggestions: requestSuggestionsTool;
-  deepResearch: deepResearchTool;
-  readDocument: readDocumentTool;
-  generateImage: generateImageTool;
-  webSearch: webSearchTool;
-  codeInterpreter: codeInterpreterTool;
-  retrieve: retrieveTool;
+  // getWeather: weatherTool;
+  // createDocument: createDocumentTool;
+  // updateDocument: updateDocumentTool;
+  // requestSuggestions: requestSuggestionsTool;
+  // deepResearch: deepResearchTool;
+  // readDocument: readDocumentTool;
+  // generateImage: generateImageTool;
+  // webSearch: webSearchTool;
+  mgrepSearch: mgrepSearchTool;
+  mgrepStatus: mgrepStatusTool;
+  getProfessorsByInstitution: getProfessorsByInstitutionTool;
+  getInstitutionsByPlace: getInstitutionsByPlaceTool;
+  searchAuthors: searchAuthorsTool;
+  searchInstitutions: searchInstitutionsTool;
+  // codeInterpreter: codeInterpreterTool;
+  // retrieve: retrieveTool;
 };
 
 type FollowupSuggestions = {

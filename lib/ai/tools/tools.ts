@@ -1,18 +1,14 @@
 import type { ModelId } from "@airegistry/vercel-gateway";
 import type { FileUIPart, ModelMessage } from "ai";
-import { codeInterpreter } from "@/lib/ai/tools/code-interpreter";
-import { createDocumentTool } from "@/lib/ai/tools/create-document";
-import { generateImage } from "@/lib/ai/tools/generate-image";
-import { getWeather } from "@/lib/ai/tools/get-weather";
-import { readDocument } from "@/lib/ai/tools/read-document";
-import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
-import { retrieve } from "@/lib/ai/tools/retrieve";
-import { updateDocument } from "@/lib/ai/tools/update-document";
-import { tavilyWebSearch } from "@/lib/ai/tools/web-search";
+import { mgrepSearchTool, mgrepStatusTool } from "@/lib/ai/tools/mgrep";
+import {
+  getProfessorsByInstitutionTool,
+  getInstitutionsByPlaceTool,
+  searchAuthorsTool,
+  searchInstitutionsTool,
+} from "@/lib/ai/tools/openalex";
 import type { Session } from "@/lib/auth";
-import { siteConfig } from "@/lib/config";
 import type { StreamWriter } from "../types";
-import { deepResearch } from "./deep-research/deep-research";
 
 export function getTools({
   dataStream,
@@ -31,56 +27,19 @@ export function getTools({
   lastGeneratedImage: { imageUrl: string; name: string } | null;
   contextForLLM: ModelMessage[];
 }) {
-  return {
-    getWeather,
-    createDocument: createDocumentTool({
-      session,
-      dataStream,
-      contextForLLM,
-      messageId,
-      selectedModel,
-    }),
-    updateDocument: updateDocument({
-      session,
-      dataStream,
-      messageId,
-      selectedModel,
-    }),
-    requestSuggestions: requestSuggestions({
-      session,
-      dataStream,
-    }),
-    readDocument: readDocument({
-      session,
-      dataStream,
-    }),
-    // reasonSearch: createReasonSearch({
-    //   session,
-    //   dataStream,
-    // }),
-    retrieve,
-    ...(siteConfig.integrations.webSearch
-      ? {
-          webSearch: tavilyWebSearch({
-            dataStream,
-            writeTopLevelUpdates: true,
-          }),
-        }
-      : {}),
+  const userId = session.user?.id ?? null;
+  const anonymousSessionId = null;
 
-    ...(siteConfig.integrations.sandbox ? { codeInterpreter } : {}),
-    ...(siteConfig.integrations.openai
-      ? { generateImage: generateImage({ attachments, lastGeneratedImage }) }
-      : {}),
-    ...(siteConfig.integrations.webSearch
-      ? {
-          deepResearch: deepResearch({
-            session,
-            dataStream,
-            messageId,
-            messages: contextForLLM,
-          }),
-        }
-      : {}),
+  return {
+    mgrepSearch: mgrepSearchTool,
+    mgrepStatus: mgrepStatusTool,
+    getProfessorsByInstitution: getProfessorsByInstitutionTool({
+      dataStream,
+      userId,
+      anonymousSessionId,
+    }),
+    getInstitutionsByPlace: getInstitutionsByPlaceTool,
+    searchAuthors: searchAuthorsTool,
+    searchInstitutions: searchInstitutionsTool,
   };
 }
