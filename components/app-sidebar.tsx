@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { GraduationCap } from "lucide-react";
 import { NewChatButton } from "@/components/new-chat-button";
 import { SearchChatsButton } from "@/components/search-chats";
 import { SidebarTopRow } from "@/components/sidebar-top-row";
@@ -9,10 +7,8 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarSeparator,
+  SidebarMenu, SidebarMenuItem,
+  SidebarSeparator
 } from "@/components/ui/sidebar";
 import { AppSidebarHistoryConditional } from "./app-sidebar-history-conditional";
 import { SidebarUserNav } from "./sidebar-user-nav";
@@ -33,18 +29,6 @@ export function AppSidebar() {
 
           <SidebarMenuItem>
             <SearchChatsButton />
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link
-                className="flex items-center gap-2"
-                href={{ pathname: "/saved-professors" }}
-              >
-                <GraduationCap className="h-4 w-4" />
-                <span>Saved Professors</span>
-              </Link>
-            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

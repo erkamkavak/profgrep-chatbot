@@ -1,7 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
 import type { StreamWriter } from "../types";
-import { upsertProfessorsProfile } from "@/lib/db/queries";
 import { embedMgrepFiles } from "./mgrep";
 
 const OPENALEX_BASE_URL = "https://api.openalex.org";
@@ -228,22 +227,7 @@ export const getProfessorsByInstitutionTool = ({
 
       const storeName = `${process.env.MXBAI_STORE || "mgrep"}-${institutionKey}`;
 
-      // Persist professors markdown in DB scoped to user/anonymous session
-      try {
-        if (combinedMarkdown) {
-          await upsertProfessorsProfile({
-            userId,
-            anonymousSessionId,
-            institutionId: institutionKey,
-            storeName,
-            markdown: combinedMarkdown,
-          });
-        }
-      } catch {
-        // ignore DB errors so main flow continues
-      }
-
-      // Embed professors markdown into Mixedbread store
+      // Embed professors markdown into Mixedbread store (no DB persistence)
       try {
         if (combinedMarkdown) {
           await embedMgrepFiles({
