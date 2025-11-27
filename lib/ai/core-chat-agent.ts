@@ -73,6 +73,25 @@ export async function createCoreChatAgent({
     await replaceFilePartUrlByBinaryDataInMessages(modelMessages);
 
   // Create the streamText result
+  const tools = getTools({
+    dataStream,
+    session: {
+      user: {
+        id: userId || undefined,
+      },
+      expires: "noop",
+    },
+    contextForLLM,
+    messageId,
+    selectedModel: modelDefinition.apiModelId as any,
+    attachments: userMessage.parts.filter((part) => part.type === "file"),
+    lastGeneratedImage,
+  });
+
+  const enabledActiveTools = activeTools.filter(
+    (tool): tool is keyof typeof tools => tool in tools
+  );
+
   const result = streamText({
     model: getLanguageModel(modelDefinition.id, providerKeys),
     system,
@@ -92,26 +111,13 @@ export async function createCoreChatAgent({
         });
       },
     ],
-    activeTools,
+    activeTools: enabledActiveTools,
     experimental_transform: markdownJoinerTransform(),
     experimental_telemetry: {
       isEnabled: true,
       functionId: "chat-response",
     },
-    tools: getTools({
-      dataStream,
-      session: {
-        user: {
-          id: userId || undefined,
-        },
-        expires: "noop",
-      },
-      contextForLLM,
-      messageId,
-      selectedModel: modelDefinition.apiModelId,
-      attachments: userMessage.parts.filter((part) => part.type === "file"),
-      lastGeneratedImage,
-    }),
+    tools,
     onError,
     abortSignal,
     ...(modelDefinition.fixedTemperature

@@ -153,7 +153,7 @@ export function ContextUsageFromParent({
     <div className={className}>
       <ContextUsage
         iconOnly={iconOnly}
-        selectedModelId={modelDefinition.apiModelId}
+        selectedModelId={modelDefinition.apiModelId as ModelId}
         usage={usage}
       />
     </div>

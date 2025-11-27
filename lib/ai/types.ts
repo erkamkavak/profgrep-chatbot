@@ -31,16 +31,16 @@ import type { createDocumentTool as createDocument } from "./tools/create-docume
 import type { ResearchUpdate } from "./tools/research-updates-schema";
 
 export const toolNameSchema = z.enum([
-  // "getWeather",
-  // "createDocument",
-  // "updateDocument",
-  // "requestSuggestions",
-  // "readDocument",
-  // "retrieve",
-  // "webSearch",
-  // "codeInterpreter",
-  // "generateImage",
-  // "deepResearch",
+  "getWeather",
+  "createDocument",
+  "updateDocument",
+  "requestSuggestions",
+  "readDocument",
+  "retrieve",
+  "webSearch",
+  "codeInterpreter",
+  "generateImage",
+  "deepResearch",
   "mgrepSearch",
   "mgrepStatus",
   "getProfessorsByInstitution",
@@ -54,10 +54,10 @@ const _ = toolNameSchema.options satisfies ToolName[];
 type ToolNameInternal = z.infer<typeof toolNameSchema>;
 
 export const frontendToolsSchema = z.enum([
-  // "webSearch",
-  // "deepResearch",
-  // "generateImage",
-  // "createDocument",
+  "webSearch",
+  "deepResearch",
+  "generateImage",
+  "createDocument",
 ]);
 
 const __ = frontendToolsSchema.options satisfies ToolNameInternal[];
@@ -96,22 +96,22 @@ type codeInterpreterTool = InferUITool<typeof codeInterpreter>;
 type retrieveTool = InferUITool<typeof retrieve>;
 
 export type ChatTools = {
-  // getWeather: weatherTool;
-  // createDocument: createDocumentTool;
-  // updateDocument: updateDocumentTool;
-  // requestSuggestions: requestSuggestionsTool;
-  // deepResearch: deepResearchTool;
-  // readDocument: readDocumentTool;
-  // generateImage: generateImageTool;
-  // webSearch: webSearchTool;
+  getWeather: weatherTool;
+  createDocument: createDocumentTool;
+  updateDocument: updateDocumentTool;
+  requestSuggestions: requestSuggestionsTool;
+  deepResearch: deepResearchTool;
+  readDocument: readDocumentTool;
+  generateImage: generateImageTool;
+  webSearch: webSearchTool;
   mgrepSearch: mgrepSearchTool;
   mgrepStatus: mgrepStatusTool;
   getProfessorsByInstitution: getProfessorsByInstitutionTool;
   getInstitutionsByPlace: getInstitutionsByPlaceTool;
   searchAuthors: searchAuthorsTool;
   searchInstitutions: searchInstitutionsTool;
-  // codeInterpreter: codeInterpreterTool;
-  // retrieve: retrieveTool;
+  codeInterpreter: codeInterpreterTool;
+  retrieve: retrieveTool;
 };
 
 type FollowupSuggestions = {

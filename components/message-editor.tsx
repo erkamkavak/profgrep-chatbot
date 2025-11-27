@@ -1,11 +1,10 @@
 "use client";
 import { useChatStatus } from "@ai-sdk-tools/store";
-import type { ModelId } from "@airegistry/vercel-gateway";
 import { type Dispatch, type SetStateAction, useCallback } from "react";
 import type { ChatMessage } from "@/lib/ai/types";
 import {
-  getAttachmentsFromMessage,
-  getTextContentFromMessage,
+    getAttachmentsFromMessage,
+    getTextContentFromMessage,
 } from "@/lib/utils";
 import { ChatInputProvider } from "@/providers/chat-input-provider";
 import { MultimodalInput } from "./multimodal-input";
@@ -52,7 +51,7 @@ export function MessageEditor(
   const initialAttachments = getAttachmentsFromMessage(props.message);
 
   // Use selectedModel from the message metadata, or fall back to current selected model
-  const messageSelectedModel = props.message.metadata?.selectedModel as ModelId;
+  const messageSelectedModel = props.message.metadata?.selectedModel;
   const { parentMessageId: _parentMessageId, ...rest } = props;
   return (
     <ChatInputProvider

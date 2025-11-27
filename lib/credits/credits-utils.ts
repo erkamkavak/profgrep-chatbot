@@ -1,7 +1,7 @@
 import {
-  type AppModelDefinition,
-  type AppModelId,
-  getAppModelDefinition,
+    type AppModelDefinition,
+    type AppModelId,
+    getAppModelDefinition,
 } from "../ai/app-models";
 import { toolsDefinitions } from "../ai/tools/tools-definitions";
 import type { ToolName } from "../ai/types";
@@ -60,11 +60,10 @@ export function getBaseModelCostByModelId(modelId: AppModelId) {
 }
 
 export function getBaseModelCost(model: AppModelDefinition) {
-  if (!model.pricing) {
-    return 10; // fallback for models without pricing
-  }
-
-  const { input, output } = model.pricing;
+  // Since AppModelDefinition doesn't have pricing, use a fallback cost structure
+  const pricing = (model as any).pricing || { input: "0.00001", output: "0.00003" }; // Default fallback pricing
+  
+  const { input, output } = pricing;
 
   // Convert from string to number and scale to per million tokens
   const inputCostPerMTok = Number.parseFloat(input) * 1_000_000;

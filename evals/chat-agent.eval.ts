@@ -28,7 +28,7 @@ evalite("Chat Agent Eval", {
       metadata: {
         createdAt: new Date(),
         parentMessageId: null,
-        selectedModel: "anthropic/claude-haiku-4.5",
+        selectedModel: "openrouter:x-ai/grok-4.1-fast:free",
       },
     };
 
@@ -36,7 +36,7 @@ evalite("Chat Agent Eval", {
     const result = await runCoreChatAgentEval({
       userMessage,
       previousMessages: [],
-      selectedModelId: "anthropic/claude-haiku-4.5",
+      selectedModelId: "openrouter:x-ai/grok-4.1-fast:free",
       activeTools: [], // No tools for simple Q&A
     });
 

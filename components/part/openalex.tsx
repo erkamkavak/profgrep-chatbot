@@ -215,7 +215,7 @@ export function GetInstitutionsByPlace({
   tool: GetInstitutionsByPlaceTool;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const place = tool.input?.place || "location";
+  const place = tool.input?.placeQuery || "location";
 
   if (tool.state === "input-available") {
       return (

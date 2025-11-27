@@ -1,6 +1,6 @@
-import type { ModelId } from "@airegistry/vercel-gateway";
 import type { Chat, DBMessage } from "@/lib/db/schema";
 import type { UIChat } from "@/lib/types/ui-chat";
+import type { AppModelId } from "./ai/app-models";
 import type { ChatMessage, UiToolName } from "./ai/types";
 
 // Helper functions for type conversion
@@ -29,7 +29,7 @@ export function dbMessageToChatMessage(message: DBMessage): ChatMessage {
       createdAt: message.createdAt,
       isPartial: message.isPartial,
       parentMessageId: message.parentMessageId,
-      selectedModel: (message.selectedModel as ModelId) || ("" as ModelId),
+      selectedModel: (message.selectedModel as AppModelId) || ("openrouter:x-ai/grok-4.1-fast:free" as AppModelId),
       selectedTool: (message.selectedTool as UiToolName | null) || undefined,
       usage: message.lastContext as ChatMessage["metadata"]["usage"],
     },

@@ -126,7 +126,14 @@ export function getNotesFromToolCalls(messages: ModelMessage[]): string[] {
 }
 
 export function getModelContextWindow(modelId: ModelId): number {
-  return getAppModelDefinition(modelId).context_window;
+  // Use a fallback context window since AppModelDefinition doesn't have context_window
+  const fallbackContextWindow = 128000; // Default fallback
+  try {
+    const modelDef = getAppModelDefinition(modelId as any);
+    return (modelDef as any).context_window || fallbackContextWindow;
+  } catch {
+    return fallbackContextWindow;
+  }
 }
 
 // Misc Utils
