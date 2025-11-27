@@ -23,7 +23,7 @@ import {
 } from "@/lib/ai/followup-suggestions";
 import { systemPrompt } from "@/lib/ai/prompts";
 import { calculateMessagesTokens } from "@/lib/ai/token-utils";
-import { allTools, toolsDefinitions } from "@/lib/ai/tools/tools-definitions";
+import { allTools } from "@/lib/ai/tools/tools-definitions";
 import type { ChatMessage, ToolName } from "@/lib/ai/types";
 import {
   getAnonymousSession,
@@ -31,9 +31,7 @@ import {
 } from "@/lib/anonymous-session-server";
 import { auth } from "@/lib/auth";
 import { createAnonymousSession } from "@/lib/create-anonymous-session";
-import type { CreditReservation } from "@/lib/credits/credit-reservation";
 import {
-  filterAffordableTools,
   getBaseModelCostByModelId,
 } from "@/lib/credits/credits-utils";
 import {
@@ -52,8 +50,8 @@ import type { AnonymousSession } from "@/lib/types/anonymous";
 import { ANONYMOUS_LIMITS } from "@/lib/types/anonymous";
 import { generateUUID } from "@/lib/utils";
 import { checkAnonymousRateLimit, getClientIP } from "@/lib/utils/rate-limit";
+import type { ProviderKeys } from "@/lib/provider-keys";
 import { generateTitleFromUserMessage } from "../../actions";
-import { getCreditReservation } from "./get-credit-reservation";
 import { getThreadUpToMessageId } from "./get-thread-up-to-message-id";
 
 // Create shared Redis clients for resumable stream and cleanup
@@ -252,18 +250,18 @@ async function handleChatValidation({
 function determineExplicitlyRequestedTools(
   selectedTool: string | null
 ): ToolName[] | null {
-  if (selectedTool === "deepResearch") {
-    return ["deepResearch"];
-  }
-  if (selectedTool === "webSearch") {
-    return ["webSearch"];
-  }
-  if (selectedTool === "generateImage") {
-    return ["generateImage"];
-  }
-  if (selectedTool === "createDocument") {
-    return ["createDocument", "updateDocument"];
-  }
+  // if (selectedTool === "deepResearch") {
+  //   return ["deepResearch"];
+  // }
+  // if (selectedTool === "webSearch") {
+  //   return ["webSearch"];
+  // }
+  // if (selectedTool === "generateImage") {
+  //   return ["generateImage"];
+  // }
+  // if (selectedTool === "createDocument") {
+  //   return ["createDocument", "updateDocument"];
+  // }
   return null;
 }
 
@@ -278,59 +276,25 @@ async function handleCreditReservation({
   baseModelCost: number;
   anonymousSession: AnonymousSession | null;
 }): Promise<{
-  reservation: CreditReservation | null;
+  reservation: null;
   error: Response | null;
 }> {
-  if (!isAnonymous) {
-    if (!userId) {
-      return {
-        reservation: null,
-        error: new Response("User ID is required for authenticated users", {
-          status: 401,
-        }),
-      };
-    }
-
-    const { reservation: res, error: creditError } = await getCreditReservation(
-      userId,
-      baseModelCost
-    );
-
-    if (creditError) {
-      console.log(
-        "RESPONSE > POST /api/chat: Credit reservation error:",
-        creditError
-      );
-      return {
-        reservation: null,
-        error: new Response(creditError, {
-          status: 402,
-        }),
-      };
-    }
-
-    return { reservation: res, error: null };
-  }
-
   if (anonymousSession) {
     // Increment message count and update session
     anonymousSession.remainingCredits -= baseModelCost;
     await setAnonymousSession(anonymousSession);
   }
 
+  // No credit reservation for authenticated users
   return { reservation: null, error: null };
 }
 
 function determineActiveTools({
   isAnonymous,
-  reservation,
-  baseModelCost,
   modelDefinition,
   explicitlyRequestedTools,
 }: {
   isAnonymous: boolean;
-  reservation: CreditReservation | null;
-  baseModelCost: number;
   modelDefinition: AppModelDefinition;
   explicitlyRequestedTools: ToolName[] | null;
 }): {
@@ -339,30 +303,24 @@ function determineActiveTools({
 } {
   const log = createModuleLogger("api:chat:tools");
 
-  const availableBudget = isAnonymous
-    ? ANONYMOUS_LIMITS.CREDITS
-    : (reservation?.budget ?? baseModelCost);
-  const remainingBudget = availableBudget - baseModelCost;
+  let activeTools: ToolName[] = isAnonymous
+    ? ANONYMOUS_LIMITS.AVAILABLE_TOOLS
+    : allTools;
 
-  let activeTools: ToolName[] = filterAffordableTools(
-    isAnonymous ? ANONYMOUS_LIMITS.AVAILABLE_TOOLS : allTools,
-    remainingBudget
-  );
-
-  // Disable all tools for models with unspecified features
-  if (modelDefinition?.input) {
-    // Let's not allow deepResearch if the model support reasoning (it's expensive and slow)
-    if (
-      modelDefinition.reasoning &&
-      activeTools.some((tool: ToolName) => tool === "deepResearch")
-    ) {
-      activeTools = activeTools.filter(
-        (tool: ToolName) => tool !== "deepResearch"
-      );
-    }
-  } else {
-    activeTools = [];
-  }
+  // // Disable all tools for models with unspecified features
+  // if (modelDefinition?.input) {
+  //   // Let's not allow deepResearch if the model support reasoning (it's expensive and slow)
+  //   if (
+  //     modelDefinition.reasoning &&
+  //     activeTools.some((tool: ToolName) => tool === "deepResearch")
+  //   ) {
+  //     activeTools = activeTools.filter(
+  //       (tool: ToolName) => tool !== "deepResearch"
+  //     );
+  //   }
+  // } else {
+  //   activeTools = [];
+  // }
 
   if (
     explicitlyRequestedTools &&
@@ -373,14 +331,14 @@ function determineActiveTools({
   ) {
     log.warn(
       { explicitlyRequestedTools },
-      "Insufficient budget for requested tool"
+      "Requested tool not available"
     );
     return {
       activeTools: [],
       error: new Response(
-        `Insufficient budget for requested tool: ${explicitlyRequestedTools}.`,
+        `Requested tool not available: ${explicitlyRequestedTools}.`,
         {
-          status: 402,
+          status: 400,
         }
       ),
     };
@@ -454,8 +412,8 @@ async function createChatStream({
   abortController,
   isAnonymous,
   baseModelCost,
-  reservation,
   timeoutId,
+  providerKeys,
 }: {
   messageId: string;
   chatId: string;
@@ -468,8 +426,8 @@ async function createChatStream({
   abortController: AbortController;
   isAnonymous: boolean;
   baseModelCost: number;
-  reservation: CreditReservation | null;
   timeoutId: NodeJS.Timeout;
+  providerKeys?: ProviderKeys;
 }) {
   const log = createModuleLogger("api:chat:stream");
   const system = await getSystemPrompt({ isAnonymous, chatId });
@@ -511,6 +469,7 @@ async function createChatStream({
         onError: (error) => {
           log.error({ error }, "streamText error");
         },
+        providerKeys,
       });
 
       const initialMetadata = {
@@ -564,23 +523,15 @@ async function createChatStream({
       clearTimeout(timeoutId);
       await finalizeMessageAndCredits({
         messages,
-        baseModelCost,
         userId,
         isAnonymous,
         chatId,
-        reservation,
       });
     },
     onError: () => {
       clearTimeout(timeoutId);
       log.error("onError");
-      // Release reserved credits on error
-      if (reservation) {
-        reservation.cleanup().catch((error) => {
-          log.error({ error }, "Failed to cleanup reservation in onError");
-        });
-      }
-      return "Oops, an error occured!";
+      return "Oops, an error occurred!";
     },
   });
 
@@ -597,9 +548,9 @@ async function executeChatRequest({
   isAnonymous,
   baseModelCost,
   activeTools,
-  reservation,
   abortController,
   timeoutId,
+  providerKeys,
 }: {
   chatId: string;
   userMessage: ChatMessage;
@@ -610,9 +561,9 @@ async function executeChatRequest({
   isAnonymous: boolean;
   baseModelCost: number;
   activeTools: ToolName[];
-  reservation: CreditReservation | null;
   abortController: AbortController;
   timeoutId: NodeJS.Timeout;
+  providerKeys?: ProviderKeys;
 }): Promise<Response> {
   const log = createModuleLogger("api:chat:execute");
   const messageId = generateUUID();
@@ -658,8 +609,8 @@ async function executeChatRequest({
     abortController,
     isAnonymous,
     baseModelCost,
-    reservation,
     timeoutId,
+    providerKeys,
   });
 
   after(async () => {
@@ -811,7 +762,6 @@ async function prepareRequestContext({
   anonymousPreviousMessages,
   baseModelCost,
   modelDefinition,
-  reservation,
   explicitlyRequestedTools,
 }: {
   userMessage: ChatMessage;
@@ -820,7 +770,6 @@ async function prepareRequestContext({
   anonymousPreviousMessages: ChatMessage[];
   baseModelCost: number;
   modelDefinition: AppModelDefinition;
-  reservation: CreditReservation | null;
   explicitlyRequestedTools: ToolName[] | null;
 }): Promise<{
   previousMessages: ChatMessage[];
@@ -831,8 +780,6 @@ async function prepareRequestContext({
 
   const toolsResult = determineActiveTools({
     isAnonymous,
-    reservation,
-    baseModelCost,
     modelDefinition,
     explicitlyRequestedTools,
   });
@@ -880,43 +827,20 @@ async function prepareRequestContext({
 
 async function finalizeMessageAndCredits({
   messages,
-  baseModelCost,
   userId,
   isAnonymous,
   chatId,
-  reservation,
 }: {
   messages: ChatMessage[];
-  baseModelCost: number;
   userId: string | null;
   isAnonymous: boolean;
   chatId: string;
-  reservation: CreditReservation | null;
 }): Promise<void> {
   const log = createModuleLogger("api:chat:finalize");
 
   if (!userId) {
     return;
   }
-
-  const actualCost =
-    baseModelCost +
-    messages
-      .flatMap((message) => message.parts)
-      .reduce((acc, toolResult) => {
-        if (!toolResult.type.startsWith("tool-")) {
-          return acc;
-        }
-
-        const toolDef =
-          toolsDefinitions[toolResult.type.replace("tool-", "") as ToolName];
-
-        if (!toolDef) {
-          return acc;
-        }
-
-        return acc + toolDef.cost;
-      }, 0);
 
   try {
     // TODO: Validate if this is correct ai sdk v5
@@ -933,17 +857,8 @@ async function finalizeMessageAndCredits({
         message: assistantMessage,
       });
     }
-
-    // Finalize credit usage: deduct actual cost, release reservation
-    if (reservation) {
-      await reservation.finalize(actualCost);
-    }
   } catch (error) {
-    log.error({ error }, "Failed to save chat or finalize credits");
-    // Still release the reservation on error
-    if (reservation) {
-      await reservation.cleanup();
-    }
+    log.error({ error }, "Failed to save chat");
   }
 }
 
@@ -958,9 +873,9 @@ async function handleRequestExecution({
   anonymousSession,
   baseModelCost,
   activeTools,
-  reservation,
   abortController,
   timeoutId,
+  providerKeys,
 }: {
   chatId: string;
   userMessage: ChatMessage;
@@ -972,9 +887,9 @@ async function handleRequestExecution({
   anonymousSession: AnonymousSession | null;
   baseModelCost: number;
   activeTools: ToolName[];
-  reservation: CreditReservation | null;
   abortController: AbortController;
   timeoutId: NodeJS.Timeout;
+  providerKeys?: ProviderKeys;
 }): Promise<Response> {
   const log = createModuleLogger("api:chat:execute-wrapper");
   try {
@@ -988,16 +903,13 @@ async function handleRequestExecution({
       isAnonymous,
       baseModelCost,
       activeTools,
-      reservation,
       abortController,
       timeoutId,
+      providerKeys,
     });
   } catch (error) {
     clearTimeout(timeoutId);
     log.error({ error }, "error found in try block");
-    if (reservation) {
-      await reservation.cleanup();
-    }
     if (anonymousSession) {
       anonymousSession.remainingCredits += baseModelCost;
       await setAnonymousSession(anonymousSession);
@@ -1014,11 +926,13 @@ export async function POST(request: NextRequest) {
       message: userMessage,
       prevMessages: anonymousPreviousMessages,
       projectId,
+      providerKeys,
     }: {
       id: string;
       message: ChatMessage;
       prevMessages: ChatMessage[];
       projectId?: string;
+      providerKeys?: ProviderKeys;
     } = await request.json();
 
     if (!userMessage) {
@@ -1075,18 +989,13 @@ export async function POST(request: NextRequest) {
 
     const baseModelCost = getBaseModelCostByModelId(selectedModelId);
 
-    const creditResult = await handleCreditReservation({
+    // Handle anonymous session credit counting
+    await handleCreditReservation({
       userId,
       isAnonymous,
       baseModelCost,
       anonymousSession,
     });
-
-    if (creditResult.error) {
-      return creditResult.error;
-    }
-
-    const reservation = creditResult.reservation;
 
     const contextResult = await prepareRequestContext({
       userMessage,
@@ -1095,7 +1004,6 @@ export async function POST(request: NextRequest) {
       anonymousPreviousMessages,
       baseModelCost,
       modelDefinition,
-      reservation,
       explicitlyRequestedTools,
     });
 
@@ -1105,12 +1013,9 @@ export async function POST(request: NextRequest) {
 
     const { previousMessages, activeTools } = contextResult;
 
-    // Create AbortController with 55s timeout for credit cleanup
+    // Create AbortController with 55s timeout
     const abortController = new AbortController();
     const timeoutId = setTimeout(async () => {
-      if (reservation) {
-        await reservation.cleanup();
-      }
       abortController.abort();
     }, 290_000); // 290 seconds
 
@@ -1126,9 +1031,9 @@ export async function POST(request: NextRequest) {
       anonymousSession,
       baseModelCost,
       activeTools,
-      reservation,
       abortController,
       timeoutId,
+      providerKeys,
     });
   } catch (error) {
     log.error({ error }, "RESPONSE > POST /api/chat error");
