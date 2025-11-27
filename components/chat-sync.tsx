@@ -8,6 +8,7 @@ import { useDataStream } from "@/components/data-stream-provider";
 import { useSaveMessageMutation } from "@/hooks/chat-sync-hooks";
 import { ChatSDKError } from "@/lib/ai/errors";
 import type { ChatMessage } from "@/lib/ai/types";
+import { getProviderKeys } from "@/lib/provider-keys";
 import { fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { useSession } from "@/providers/session-provider";
 
@@ -45,12 +46,16 @@ export function ChatSync({
       prepareSendMessagesRequest({ messages, id: requestId, body }) {
         setAutoResume(true);
 
+        // Get provider keys from localStorage
+        const providerKeys = getProviderKeys();
+
         return {
           body: {
             id: requestId,
             message: messages.at(-1),
             prevMessages: isAuthenticated ? [] : messages.slice(0, -1),
             projectId,
+            providerKeys,
             ...body,
           },
         };

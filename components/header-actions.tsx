@@ -1,10 +1,12 @@
 "use client";
 
-import { LogIn } from "lucide-react";
+import { Key, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { GitIcon } from "@/components/icons";
+import { SecretsDialog } from "@/components/secrets-dialog";
 import { Button } from "@/components/ui/button";
+import { publicConfig } from "@/lib/public-config";
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +21,17 @@ function PureHeaderActions() {
 
   return (
     <div className="flex items-center gap-2">
+      <SecretsDialog>
+        <Button 
+          size="icon" 
+          type="button" 
+          variant="ghost" 
+          title="API Keys"
+          className="cursor-pointer"
+        >
+          <Key className="h-5 w-5" />
+        </Button>
+      </SecretsDialog>
       {!user && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -41,7 +54,7 @@ function PureHeaderActions() {
       <Button asChild size="icon" type="button" variant="ghost">
         <a
           className="flex items-center justify-center"
-          href="https://github.com/franciscomoretti/sparka"
+          href={publicConfig.githubUrl}
           rel="noopener noreferrer"
           target="_blank"
         >

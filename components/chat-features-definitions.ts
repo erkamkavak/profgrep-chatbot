@@ -46,9 +46,4 @@ export const toolDefinitions: Record<UiToolName, ToolDefinition> = {
   },
 };
 
-export const enabledTools: UiToolName[] = [
-  "webSearch",
-  "deepResearch",
-  "generateImage",
-  "createDocument",
-];
+export const enabledTools: UiToolName[] = [];

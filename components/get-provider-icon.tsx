@@ -12,6 +12,7 @@ import {
   Mistral,
   Moonshot,
   OpenAI,
+  OpenRouter,
   Perplexity,
   Vercel,
   XAI,
@@ -20,11 +21,13 @@ import {
 import { HatGlasses } from "lucide-react";
 
 export function getProviderIcon(
-  provider: ProviderId,
+  provider: ProviderId | "openrouter",
   size = 16
 ): React.ReactNode {
   const iconProps = { size };
   switch (provider) {
+    case "openrouter":
+      return <OpenRouter {...iconProps} />;
     case "openai":
       return <OpenAI {...iconProps} />;
     case "anthropic":
